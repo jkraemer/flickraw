@@ -33,7 +33,7 @@ if ENV['http_proxy'] and not FlickRawOptions['proxy_host']
 end
 
 module FlickRaw
-  VERSION='0.8.4'
+  VERSION='0.8.5'
 
   FLICKR_HOST='api.flickr.com'.freeze
   REST_PATH='/services/rest/?'.freeze

@@ -2,7 +2,10 @@
 
 require 'test/unit'
 require 'flickraw'
+require File.expand_path(File.dirname(__FILE__) + '/test_helper.rb')
 
+# To run the tests, copy test/config.yml.example to test/config.yml and
+# update with your flickr API key, shared secret and auth token (used for upload test)
 class Basic < Test::Unit::TestCase
   def test_request
     flickr_objects = %w{activity auth blogs collections commons contacts

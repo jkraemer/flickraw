@@ -2,13 +2,12 @@
 
 require 'test/unit'
 require 'flickraw'
-
-# FlickRaw.shared_secret = # Shared secret
-# flickr.auth.checkToken :auth_token => # Auth token
+require File.expand_path(File.dirname(__FILE__) + '/test_helper.rb')
 
 class Upload < Test::Unit::TestCase
   def test_upload
 
+    flickr.auth.checkToken :auth_token => CONFIG['token']
     path = File.dirname(__FILE__) + '/image testée.jpg'
     u = info = nil
     title = "Titre de l'image testée"

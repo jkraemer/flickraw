@@ -3,6 +3,8 @@ require "rdoc/parser/ruby"
 require "cgi"
 
 FLICKR_API_URL='http://www.flickr.com/services/api'
+FlickRaw.api_key = 'apikey'
+FlickRaw.shared_secret = 'shared secret'
 
 FakedToken = Struct.new :text
 

@@ -4,6 +4,9 @@ require 'rake/packagetask'
 require 'rake/gempackagetask'
 require 'rake/testtask'
 
+# needed for the rdoc task
+require './lib/em_rake' 
+
 FlickRawOptions = {'lazyload' => true}
 require './lib/flickraw'
 require './flickraw_rdoc' if RUBY_VERSION >= "1.9"
@@ -11,14 +14,18 @@ require './flickraw_rdoc' if RUBY_VERSION >= "1.9"
 PKG_FILES = FileList["lib/flickraw.rb", "flickraw_rdoc.rb", "LICENSE", "README.rdoc", "rakefile", "examples/*.rb", "test/*.rb"].to_a
 
 spec = Gem::Specification.new do |s|
-  s.summary = "Flickr library with a syntax close to the syntax described on http://www.flickr.com/services/api"
-  s.name = "flickraw"
-  s.author = "Mael Clerambault"
-  s.email =  "maelclerambault@yahoo.fr"
-  s.homepage = "http://hanklords.github.com/flickraw/"
+  s.summary = "Event machine based flickr library with a syntax close to the syntax described on http://www.flickr.com/services/api"
+  s.name = "em-flickraw"
+  s.authors = ["Mael Clerambault", "Jens Kraemer"]
+  s.email =  "jk@jkraemer.net"
+  s.homepage = "http://github.com/jkraemer/flickraw/"
   s.version = FlickRaw::VERSION
   s.files = PKG_FILES
   s.add_dependency 'json', '>= 1.1.1'
+  s.add_dependency 'eventmachine', ">= 1.0.0.beta.3"
+  s.add_dependency 'em-http-request', "= 1.0.0.beta.3"
+  s.add_dependency 'em-synchrony', "= 0.3.0.beta.1"
+  s.required_ruby_version = ::Gem::Requirement.new("~> 1.9")
 end
 
 Rake::GemPackageTask.new(spec).define
@@ -35,4 +42,7 @@ Rake::RDocTask.new do |rd|
   rd.rdoc_files.include "README.rdoc", "lib/flickraw.rb"
 end
 
-Rake::TestTask.new
+Rake::TestTask.new(:test) do |t|
+  t.libs << 'lib'
+  t.pattern = 'test/**/*_test.rb'
+end

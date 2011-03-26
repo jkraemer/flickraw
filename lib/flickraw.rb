@@ -24,6 +24,7 @@
 require 'net/http'
 require 'digest/md5'
 require 'json'
+require 'em-synchrony/em-http'
 
 FlickRawOptions = {} if not Object.const_defined? :FlickRawOptions # :nodoc:
 if ENV['http_proxy'] and not FlickRawOptions['proxy_host']
@@ -163,12 +164,9 @@ module FlickRaw
     # Raises FailedResponse if the response status is _failed_.
     def call(req, args={}, &block)
       @token = nil if req == "flickr.auth.getFrob"
-      http_response = open_flickr do |http|
-        request = Net::HTTP::Post.new(REST_PATH, 'User-Agent' => "Flickraw/#{VERSION}")
-        request.set_form_data(build_args(args, req))
-        http.request(request)
-      end
-      process_response(req, http_response)
+      request = EM::HttpRequest.new("http://#{FLICKR_HOST}#{REST_PATH}", :proxy => proxy_opts).post :head => {'User-Agent' => "Flickraw/#{VERSION}"},
+                                                                                                    :body => build_args(args, req)
+      process_response(req, request.response)
     end
 
     # Use this to upload the photo in _file_.
@@ -198,8 +196,8 @@ module FlickRaw
       full_args
     end
 
-    def process_response(req, http_response)
-      json = JSON.load(http_response.body.empty? ? "{}" : http_response.body)
+    def process_response(req, response)
+      json = JSON.load(response.empty? ? "{}" : response)
       raise FailedResponse.new(json['message'], json['code'], req) if json.delete('stat') == 'fail'
       type, json = json.to_a.first if json.size == 1 and json.all? {|k,v| v.is_a? Hash}
 
@@ -208,11 +206,19 @@ module FlickRaw
       res
     end
 
-    def open_flickr
-      Net::HTTP::Proxy(FlickRawOptions['proxy_host'], FlickRawOptions['proxy_port'], FlickRawOptions['proxy_user'], FlickRawOptions['proxy_password']).start(FLICKR_HOST) {|http|
-        http.read_timeout = FlickRawOptions['timeout'] if FlickRawOptions.key?('timeout')
-        yield http
-      }
+    def proxy_opts
+      if @proxy_opts.nil?
+        if FlickRawOptions['proxy_host']
+          @proxy_opts = { :host => FlickRawOptions['proxy_host'] }
+          @proxy_opts[:port] = FlickRawOptions['proxy_port'] if FlickRawOptions['proxy_port']
+          if FlickRawOptions['proxy_user'] && FlickRawOptions['proxy_password']
+            @proxy_opts[:authorization] = [ FlickRawOptions['proxy_user'], FlickRawOptions['proxy_password'] ]
+          end
+        else
+          @proxy_opts = false
+        end
+      end
+      @proxy_opts ? @proxy_opts : nil
     end
 
     def upload_flickr(method, file, args={})
@@ -238,8 +244,9 @@ module FlickRaw
         "\r\n" <<
         "--#{boundary}--"
 
-      http_response = open_flickr {|http| http.post(method, query, header) }
-      xml = http_response.body
+      request = EM::HttpRequest.new("http://#{FLICKR_HOST}#{method}", :proxy => proxy_opts).post :head => header,
+                                                                                                 :body => query
+      xml = request.response
       if xml[/stat="(\w+)"/, 1] == 'fail'
         msg = xml[/msg="([^"]+)"/, 1]
         code = xml[/code="([^"]+)"/, 1]

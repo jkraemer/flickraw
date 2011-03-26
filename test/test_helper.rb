@@ -1,3 +1,4 @@
+require File.expand_path(File.dirname(__FILE__) + '/em_minitest.rb')
 require 'flickraw'
 require 'yaml'
 

@@ -1,3 +1,26 @@
+= EM-Flickraw
+
+This port of github.com/hanklords awesome flickraw library uses eventmachine for all its HTTP calls.
+Ruby 1.9, eventmachine, em-http-request and em-synchrony required.
+
+The source code can be found in the em branch at http://github.com/jkraemer/flickraw
+
+As it is now, this gem depends on beta versions of these em libs:
+
+* eventmachine - 1.0.0.beta.3
+* em-http-request - 1.0.0.beta.3
+* em-synchrony - 0.3.0.beta.1
+
+I'll update these dependencies when final versions are out.
+
+== Installation:
+
+ gem install em-flickraw
+
+
+Original contents of README below...
+
+
 = Flickraw
 
 Flickraw is a library to access flickr[http://flickr.com] api in a simple way.
@@ -7,8 +30,10 @@ The methods are fetched from flickr when loading the library by using introspect
 
 The github repository: http://github.com/hanklords/flickraw
 
+
 = Installation
 Type this in a console (you might need to be superuser)
+
  gem install flickraw
 
 This will recreate the documentation by fetching the methods descriptions from flickr and then virtually plugging them in standard rdoc documentation.
